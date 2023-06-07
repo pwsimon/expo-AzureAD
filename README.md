@@ -14,6 +14,11 @@ Sowohl die Browser als auch die Android version/variante muessen sich dazu mit d
 
     npx expo start
 
+# Prepare to: Authenticate
+
+[Azure](https://docs.expo.dev/guides/authentication/#azure)
+
+
 # Deploy a project to *Expo Go* hosting
 die [Expo Go](https://docs.expo.dev/get-started/expo-go/) App kann die Anwendung direkt vom development-server laden (siehe oben).
 Mit [EAS](https://expo.dev/eas) kann man die Anwendung auch in das Expo Internet/Portal deployen und durch die Expo Go App ausfuehren lassen.
