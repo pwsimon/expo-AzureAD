@@ -18,6 +18,10 @@ Sowohl die Browser als auch die Android version/variante muessen sich dazu mit d
 
 [Azure](https://docs.expo.dev/guides/authentication/#azure)
 
+# Next Step/ToDo
+
+**Run within MobileDevice**
+
 
 # Deploy a project to *Expo Go* hosting
 die [Expo Go](https://docs.expo.dev/get-started/expo-go/) App kann die Anwendung direkt vom development-server laden (siehe oben).
