@@ -24,13 +24,15 @@ Sowohl die Browser als auch die Android version/variante muessen sich dazu mit d
 
 
 # Deploy a project to *Expo Go* hosting
-die [Expo Go](https://docs.expo.dev/get-started/expo-go/) App kann die Anwendung direkt vom development-server laden (siehe oben).
-Mit [EAS](https://expo.dev/eas) kann man die Anwendung auch in das Expo Internet/Portal deployen und durch die Expo Go App ausfuehren lassen.
-Deploy a project to Expo hosting thru Expo CLI using [EAS](https://expo.dev/eas)
+Die [Expo Go](https://docs.expo.dev/get-started/expo-go/) App kann die Anwendung direkt vom development-server laden (siehe oben).
+Deployment-Setup idealerweise mittels [Getting started](https://docs.expo.dev/eas-update/getting-started/)
 
-    eas init // create or link an EAS project, https://github.com/expo/eas-cli#eas-init
-    eas update
+    npx expo install expo-updates // install the latest expo-updates library
+    eas update:configure // initialize your project with EAS Update
+    eas build:configure // set up the configuration file (eas.json) for builds
 
 ## [EAS Update](https://docs.expo.dev/eas-update/introduction/)
 Mit `eas update` wird die Anwendung so verpackt (gebundled) das sie in der Expo Go App laufen kann.
-Mit dem [update](https://expo.dev/accounts/pwsimon/projects/verybasicv2/updates) wird das dann auch im [Portal](https://expo.dev/accounts/pwsimon/projects/verybasicv2/updates/5a6591b3-a1e4-4ed2-8565-5b7bd62a0b0a) unter [branches](https://expo.dev/accounts/pwsimon/projects/verybasicv2/branches) gelistet.
+Mit dem [update](https://expo.dev/accounts/pwsimon/projects/expo-azuread/updates) wird das dann auch unter [branches](https://expo.dev/accounts/pwsimon/projects/expo-azuread/branches) gelistet.
+
+    eas update
