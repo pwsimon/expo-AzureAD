@@ -43,8 +43,9 @@ export default function App() {
 			if (response && response.type === 'success') {
 				const oTR = TokenResponse.fromQueryParams(response.params),
 					token = response.params.access_token;
+
 				console.log("response changed => type:", response.type);
-				console.log("id_token:", oTR.idToken);
+				iNetTokenVerify(oTR.idToken);
 			}
 		}, [response]);
 
@@ -56,6 +57,37 @@ export default function App() {
 					// console.log("fullfilled => type:", authSessionResult.type);
 				})
 			.catch((e) => { console.log("exception:", e); });
+	}
+	const sUCSID = "ws0021.local";
+	const iNetTokenVerify = (sToken) => {
+/*
+* using UCConnect needs: UCSID/Tenant (Mandant)
+* folgende constellation:
+* UCServer, \\ws0021\dev\procall_master (feature/PROCALL-3267-verifyJWT), 
+* AppServer, IIS
+* Achtung!
+* ein Login/CreateSession ist vermutlich einfacher denn:
+* wg. verschaerfter CORS regeln im UCConnect darf ich keine header x-sessionid mehr schicken ...
+*/
+		fetch(`https://devuccontroller.ucconnect.de/controller/client/ucws?ucsid=${sUCSID}`)
+			.then(response => response.json())
+			.then(oDiscover => {
+				const oArgument = {
+							_type: "AsnTokenVerifyArgument",
+							sToken: sToken
+						},
+					oInit = {
+							method: "POST",
+							headers: {
+								"Content-Type": "application/json",
+								"x-ucsid": sUCSID
+							},
+							body: JSON.stringify(oArgument)
+						};
+					return fetch(`${oDiscover.redirect}/ws/direct/asnTokenVerify`, oInit)
+				})
+			.then(response => response.json())
+			.then(oTokenVerifyResult => console.log(oTokenVerifyResult) );
 	}
 	const exchangeCode = () => {
 		const config = { // interface [AccessTokenRequestConfig](https://docs.expo.dev/versions/latest/sdk/auth-session/#accesstokenrequestconfig)
