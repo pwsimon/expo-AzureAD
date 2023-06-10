@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "expo-AzureAD",
-    "slug": "expo-AzureAD",
+    "slug": "expo-azuread",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -25,6 +25,18 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "69713ac2-d7e0-49c8-8532-3bec68dab64f"
+      }
+    },
+    "owner": "pwsimon",
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/69713ac2-d7e0-49c8-8532-3bec68dab64f"
     }
   }
 }
