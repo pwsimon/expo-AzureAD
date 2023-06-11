@@ -25,7 +25,7 @@ export default function App() {
 			responseType: ResponseType.IdToken, // https://docs.expo.dev/versions/latest/sdk/auth-session/#idtoken
 			extraParams: { nonce: "nonce" }, // https://www.typescriptlang.org/docs/handbook/utility-types.html#recordkeys-type
 			redirectUri: makeRedirectUri({
-					scheme: 'your.app'
+					scheme: 'your.app' // https://docs.expo.dev/versions/latest/config/app/#scheme
 				})
 		}
 	const [
@@ -97,6 +97,18 @@ export default function App() {
 		exchangeCodeAsync(config, discoveryDoc)
 			.then(data => console.log(data));
 	}
+	const _makeRedirectUri = () => {
+		// (AuthSession.makeRedirectUri)[https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionmakeredirecturioptions]
+		const redirectUri2 = makeRedirectUri({
+				scheme: 'scheme2',
+				preferLocalhost: true
+			});
+		// Development Build: scheme2:///
+		// Expo Go: exp://localhost:19000
+		// Web dev: https://localhost:19006
+		// Web prod: https://yourwebsite.com		
+		console.log("makeRedirectUri() =>", redirectUri2);
+	}
 
 	return (
 			<View>
@@ -106,9 +118,8 @@ export default function App() {
 					onPress={(e) => { login() }}>
 				</Button>
 				<Button
-					disabled={!response}
-					title="exchange"
-					onPress={(e) => { exchangeCode() }}>
+					title="test"
+					onPress={(e) => { _makeRedirectUri() }}>
 				</Button>
 			</View>
 		);
