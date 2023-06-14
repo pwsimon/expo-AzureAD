@@ -5,6 +5,7 @@ import {
 		useAutoDiscovery,
 		makeRedirectUri, // (static) [Methods](https://docs.expo.dev/versions/latest/sdk/auth-session/#methods)
 		exchangeCodeAsync,
+		startAsync,
 		TokenResponse, // [Classes](https://docs.expo.dev/versions/latest/sdk/auth-session/#classes)
 		ResponseType // [Types](https://docs.expo.dev/versions/latest/sdk/auth-session/#types)
 	} from 'expo-auth-session'; // [Expo AuthSession](https://docs.expo.dev/versions/latest/sdk/auth-session/)
@@ -97,17 +98,43 @@ export default function App() {
 		exchangeCodeAsync(config, discoveryDoc)
 			.then(data => console.log(data));
 	}
+	const _createURL = () => {
+		console.log("createURL() =>", createURL("path"));
+	}
 	const _makeRedirectUri = () => {
-		// (AuthSession.makeRedirectUri)[https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionmakeredirecturioptions]
-		const redirectUri2 = makeRedirectUri({
-				scheme: 'scheme2',
-				preferLocalhost: true
-			});
+		/*
+		* type [AuthSessionRedirectUriOptions](https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionredirecturioptions)
+		* "https://auth.expo.io/@your-username/your-app-slug/start"
+		* "https://auth.expo.io/@pwsimon/expo-azuread/start"
+		redirectUri2 = "" // [Using auth.expo.io proxy?](https://github.com/expo/fyi/blob/main/auth-proxy-migration.md#using-authexpoio-proxy)
+		*/
+		const proxyOptions = {
+					scheme: 'scheme2',
+					preferLocalhost: true,
+					projectNameForProxy: "@pwsimon/expo-azuread/start",
+					useProxy: true
+				},
+			options = {
+					scheme: 'scheme2',
+					preferLocalhost: true
+				},
+			redirectUri2 = makeRedirectUri(proxyOptions); // (AuthSession.makeRedirectUri)[https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionmakeredirecturioptions]
 		// Development Build: scheme2:///
 		// Expo Go: exp://localhost:19000
 		// Web dev: https://localhost:19006
-		// Web prod: https://yourwebsite.com		
+		// Web prod: https://yourwebsite.com
 		console.log("makeRedirectUri() =>", redirectUri2);
+	}
+	const proxyStartAsync = () => {
+		const options = {
+				authUrl: "https://login.microsoftonline.com/a0225615-7f89-4786-a96e-2bd64c8db5c7/oauth2/v2.0/authorize",
+				// returnUrl: "",
+				projectNameForProxy: "@pwsimon/expo-azuread/start"
+			}; // [AuthSession.startAsync(options)](https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionstartasyncoptions)
+		startAsync(options)
+			.then(authSessionResult => { // [Type AuthSessionResult](https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionresult)
+					console.log("returned: (type)", authSessionResult.type);
+				});
 	}
 
 	return (
@@ -119,7 +146,7 @@ export default function App() {
 				</Button>
 				<Button
 					title="test"
-					onPress={(e) => { _makeRedirectUri() }}>
+					onPress={(e) => { proxyStartAsync() }}>
 				</Button>
 			</View>
 		);
