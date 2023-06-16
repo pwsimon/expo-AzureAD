@@ -1,5 +1,6 @@
 import * as React from 'react';
 import * as WebBrowser from 'expo-web-browser'; // [Expo WebBrowser](https://docs.expo.dev/versions/latest/sdk/webbrowser/)
+import * as Linking from 'expo-linking';
 import {
 		useAuthRequest, // [Hooks](https://docs.expo.dev/versions/latest/sdk/auth-session/#hooks)
 		useAutoDiscovery,
@@ -10,6 +11,7 @@ import {
 		ResponseType // [Types](https://docs.expo.dev/versions/latest/sdk/auth-session/#types)
 	} from 'expo-auth-session'; // [Expo AuthSession](https://docs.expo.dev/versions/latest/sdk/auth-session/)
 import {
+	Platform,
 	StyleSheet,
 	View,
 	Button } from 'react-native';
@@ -36,7 +38,7 @@ export default function App() {
 		] = useAuthRequest(requestConfig, discoveryDoc);
 
 	/*
-	* typischerweise erkennen das resolve/reject der Async Function: promptAsync()
+	* typischerweise erkennen wir das resolve/reject der Async Function: promptAsync()
 	* durch ein: useEffect(, [response])
 	* siehe auch: promptAsync.then()
 	*/
@@ -49,6 +51,8 @@ export default function App() {
 				iNetTokenVerify(oTR.idToken);
 			}
 		}, [response]);
+
+	const baseUrl =	Linking.useURL(); // [useURL](https://docs.expo.dev/versions/latest/sdk/linking/#useurl)
 
 	const login = () => {
 		const promptOptions = null; // [AuthRequestPromptOptions](https://docs.expo.dev/versions/latest/sdk/auth-session/#authrequestpromptoptions)
@@ -88,7 +92,8 @@ export default function App() {
 					return fetch(`${oDiscover.redirect}/ws/direct/asnTokenVerify`, oInit)
 				})
 			.then(response => response.json())
-			.then(oTokenVerifyResult => console.log(oTokenVerifyResult) );
+			.then(oTokenVerifyResult => console.log(oTokenVerifyResult) )
+			.catch(e =>  console.log("iNetTokenVerify() failed:", e));
 	}
 	const exchangeCode = () => {
 		const config = { // interface [AccessTokenRequestConfig](https://docs.expo.dev/versions/latest/sdk/auth-session/#accesstokenrequestconfig)
@@ -99,7 +104,23 @@ export default function App() {
 			.then(data => console.log(data));
 	}
 	const _createURL = () => {
-		console.log("createURL() =>", createURL("path"));
+/*
+* [Expo Linking](https://docs.expo.dev/versions/latest/sdk/linking/)
+* ich kann aus meiner "Anwendung" heraus zu einer anderen Site Navigieren ...
+* wobei es egal ist ob ich in einem Browser, Expo Go, ... gehosted bin.
+* [Examples](https://docs.expo.dev/versions/latest/sdk/linking/#examples)
+* liefert einen zum Environment/Host passenden Url ...
+		console.log("createURL() =>", Linking.createURL("path"));
+*/
+		if("web" === Platform.OS) {
+/*
+* wenn wir eine SPA sind, also im Browser/Web, ist der returnUrl fuer ein einfaches back ueberfluessig.
+* in allen anderen faellen koennen wir damit den workflow steuern.
+*/
+			Linking.openURL(`http://localhost/etapisrvsdk/solution/sso/expo-linking.html?returnUrl=${baseUrl}`);
+			// Linking.openURL('https://expo.dev');
+		} else
+			Linking.openSettings();
 	}
 	const _makeRedirectUri = () => {
 		/*
@@ -146,7 +167,7 @@ export default function App() {
 				</Button>
 				<Button
 					title="test"
-					onPress={(e) => { proxyStartAsync() }}>
+					onPress={(e) => { _createURL() }}>
 				</Button>
 			</View>
 		);
