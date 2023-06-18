@@ -14,6 +14,7 @@ import {
 	Platform,
 	StyleSheet,
 	View,
+	Text,
 	Button } from 'react-native';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -52,7 +53,31 @@ export default function App() {
 			}
 		}, [response]);
 
-	const baseUrl =	Linking.useURL(); // [useURL](https://docs.expo.dev/versions/latest/sdk/linking/#useurl)
+	/*
+	* das ist die "kleine" version von ReactRouter (Navigate)
+	* wir fangen und behandeln mit dem "addEventListener("url", ...") die Navigation
+	*/
+	React.useEffect(() => {
+		/*
+		* [Linking.addEventListener(type, handler)](https://docs.expo.dev/versions/latest/sdk/linking/#linkingaddeventlistenertype-handler)
+		* [EventType](https://docs.expo.dev/versions/latest/sdk/linking/#eventtype)
+		*/
+		console.log("App mount");
+		Linking.addEventListener("url", (e) => {
+			console.log("capture navigate:", e.url);
+		});
+	},
+	[]); // https://react.dev/reference/react/useEffect#examples-dependencies
+
+	/*
+	* [useURL](https://docs.expo.dev/versions/latest/sdk/linking/#useurl)
+	* [Handling links](https://docs.expo.dev/guides/linking/#handling-links)
+	*
+	* [uri-scheme](https://github.com/expo/expo-cli)
+	* Expo Go in Development (adjust the '127.0.0.1:19000' to match your dev server URL)
+	*     npx uri-scheme open exp://192.168.178.41:19000/--/somepath/into/app?hello=world --ios // pshome
+	*/
+	const baseUrl =	Linking.useURL(); 
 
 	const login = () => {
 		const promptOptions = null; // [AuthRequestPromptOptions](https://docs.expo.dev/versions/latest/sdk/auth-session/#authrequestpromptoptions)
@@ -109,18 +134,30 @@ export default function App() {
 * ich kann aus meiner "Anwendung" heraus zu einer anderen Site Navigieren ...
 * wobei es egal ist ob ich in einem Browser, Expo Go, ... gehosted bin.
 * [Examples](https://docs.expo.dev/versions/latest/sdk/linking/#examples)
-* liefert einen zum Environment/Host passenden Url ...
-		console.log("createURL() =>", Linking.createURL("path"));
+* liefert einen, zum Environment/Host, passenden Url ...
 */
+		console.log("createURL() =>", Linking.createURL("path"));
 		if("web" === Platform.OS) {
 /*
-* wenn wir eine SPA sind, also im Browser/Web, ist der returnUrl fuer ein einfaches back ueberfluessig.
+* wenn wir eine SPA sind, also im Browser/Web, ist der returnUrl fuer ein einfaches: "navigate-back" ueberfluessig.
 * in allen anderen faellen koennen wir damit den workflow steuern.
+* Web (dev): https://localhost:19006/path
 */
-			Linking.openURL(`http://localhost/etapisrvsdk/solution/sso/expo-linking.html?returnUrl=${baseUrl}`);
+			Linking.openURL(`http://ws0021.estos.de/etapisrvsdk/solution/sso/expo-linking.html?returnUrl=${baseUrl}`);
 			// Linking.openURL('https://expo.dev');
-		} else
-			Linking.openSettings();
+		} else {
+/*
+* UseCase: the App is executed from within: Expo Go App `npx expo start`
+* Expo Client (dev): exp://128.0.0.1:19000/--/path
+* Expo Client (prod): exp://exp.host/@yourname/your-app/--/path
+*/
+			Linking.openURL('https://expo.dev'); // switch to installed Browser
+			// Linking.openSettings(); // the SettingsPage from Expo Go App appear
+
+/*
+* UseCase: the App is executed as: `eas build --profile development --platform android`
+*/
+}
 	}
 	const _makeRedirectUri = () => {
 		/*
@@ -160,6 +197,7 @@ export default function App() {
 
 	return (
 			<View>
+				<Text>URL: {baseUrl}</Text>
 				<Button
 					disabled={!request}
 					title="Login"
