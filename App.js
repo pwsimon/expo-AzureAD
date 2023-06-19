@@ -64,6 +64,11 @@ export default function App() {
 		*/
 		console.log("App mount");
 		Linking.addEventListener("url", (e) => {
+/*
+* typisch an dieser stelle ein: xxx://yyy/authRedirect
+* z.B. http://localhost:19006/authRedirect?id_token=hurts
+* z.B. exp://10.20.4.63:19000/--/authRedirect?id_token=hurts
+*/
 			console.log("capture navigate:", e.url);
 		});
 	},
@@ -136,14 +141,17 @@ export default function App() {
 * [Examples](https://docs.expo.dev/versions/latest/sdk/linking/#examples)
 * liefert einen, zum Environment/Host, passenden Url ...
 */
-		console.log("createURL() =>", Linking.createURL("path"));
+		// console.log("createURL() =>", Linking.createURL("path"));
+		console.log("baseUrl:", baseUrl);
 		if("web" === Platform.OS) {
 /*
 * wenn wir eine SPA sind, also im Browser/Web, ist der returnUrl fuer ein einfaches: "navigate-back" ueberfluessig.
 * in allen anderen faellen koennen wir damit den workflow steuern.
 * Web (dev): https://localhost:19006/path
 */
-			Linking.openURL(`http://ws0021.estos.de/etapisrvsdk/solution/sso/expo-linking.html?returnUrl=${baseUrl}`);
+			// Linking.openURL(`https://auth.expo.io/@pwsimon/expo-azuread/start?authUrl=http://ws0021.estos.de/etapisrvsdk/solution/sso/redirect&returnUrl=http://localhost:19006/authRedirect?id_token=hurts`);
+			Linking.openURL(`http://ws0021.estos.de/etapisrvsdk/solution/sso/redirect`); // configure IIS reidrect: ${baseUrl}
+			// Linking.openURL(`http://ws0021.estos.de/etapisrvsdk/solution/sso/expo-linking.html?returnUrl=${baseUrl}`);
 			// Linking.openURL('https://expo.dev');
 		} else {
 /*
@@ -151,7 +159,8 @@ export default function App() {
 * Expo Client (dev): exp://128.0.0.1:19000/--/path
 * Expo Client (prod): exp://exp.host/@yourname/your-app/--/path
 */
-			Linking.openURL('https://expo.dev'); // switch to installed Browser
+			Linking.openURL(`http://ws0021.estos.de/etapisrvsdk/solution/sso/expo-linking.html?returnUrl=${baseUrl}`);
+			// Linking.openURL('https://expo.dev'); // switch to installed Browser
 			// Linking.openSettings(); // the SettingsPage from Expo Go App appear
 
 /*
@@ -163,7 +172,7 @@ export default function App() {
 		/*
 		* type [AuthSessionRedirectUriOptions](https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionredirecturioptions)
 		* "https://auth.expo.io/@your-username/your-app-slug/start"
-		* "https://auth.expo.io/@pwsimon/expo-azuread/start"
+		* eg. https://auth.expo.io/@pwsimon/expo-azuread/start?authUrl=http://ws0021.estos.de/etapisrvsdk/solution/sso/redirect&returnUrl=http://localhost:19006/authRedirect?id_token=hurts
 		redirectUri2 = "" // [Using auth.expo.io proxy?](https://github.com/expo/fyi/blob/main/auth-proxy-migration.md#using-authexpoio-proxy)
 		*/
 		const proxyOptions = {
@@ -205,7 +214,7 @@ export default function App() {
 				</Button>
 				<Button
 					title="test"
-					onPress={(e) => { _createURL() }}>
+					onPress={(e) => { _makeRedirectUri() }}>
 				</Button>
 			</View>
 		);
