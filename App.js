@@ -195,14 +195,18 @@ export default function App() {
 	const customAuthProxy = () => {
 /*
 * Das ist die variante/versuch mit dem selfHosted AuthProxy.
-* Der im Azure konfigurierte: Umleitungs-URI zeigt auf *meinen* AuthProxy
+* Der fuer die App (msal-react-spa) konfigurierte: Umleitungs-URI zeigt auf *meinen* AuthProxy.
+* Azure App-Registrierungen erlauben mehrere Umleitungs-URI. So koennen wir beide statisch angeben.
+* welcher davon letztlich/tatsaechlich verwendet wir ergibt sich aus den QueryParametern zum IdProvider
+* local development: "http://localhost:1310/"
+* internet: "https://authproxy.azurewebsites.net/"
 */
 		const authServiceUrl = encodeURIComponent("https://login.microsoftonline.com/a0225615-7f89-4786-a96e-2bd64c8db5c7/oauth2/v2.0/authorize"); // we encode this, because it will be send as a query parameter
 		const authServiceUrlParameter = `authServiceUrl=${authServiceUrl}`;
 		const authUrl = `http://localhost:1310?${authServiceUrlParameter}`;
 		const options = {
 				authUrl,
-				returnUrl: "azuread://auth" // YOUR_DEEP_LINK
+				returnUrl: "azuread://authProxy" // YOUR_DEEP_LINK
 			}; // [AuthSession.startAsync(options)](https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionstartasyncoptions)
 		startAsync(options)
 			.then(authSessionResult => { // [Type AuthSessionResult](https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionresult)
