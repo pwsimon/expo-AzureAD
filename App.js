@@ -29,7 +29,7 @@ export default function App() {
 			responseType: ResponseType.IdToken, // https://docs.expo.dev/versions/latest/sdk/auth-session/#idtoken
 			extraParams: { nonce: "nonce" }, // https://www.typescriptlang.org/docs/handbook/utility-types.html#recordkeys-type
 			redirectUri: makeRedirectUri({
-					scheme: 'your.app' // https://docs.expo.dev/versions/latest/config/app/#scheme
+					scheme: 'azuread' // https://docs.expo.dev/versions/latest/config/app/#scheme
 				})
 		}
 	const [
@@ -128,7 +128,7 @@ export default function App() {
 	const exchangeCode = () => {
 		const config = { // interface [AccessTokenRequestConfig](https://docs.expo.dev/versions/latest/sdk/auth-session/#accesstokenrequestconfig)
 				code: response.params.code,
-				redirectUri: makeRedirectUri({ scheme: 'your.app'})
+				redirectUri: makeRedirectUri({ scheme: 'azuread'})
 			};
 		exchangeCodeAsync(config, discoveryDoc)
 			.then(data => console.log(data));
@@ -176,17 +176,17 @@ export default function App() {
 		redirectUri2 = "" // [Using auth.expo.io proxy?](https://github.com/expo/fyi/blob/main/auth-proxy-migration.md#using-authexpoio-proxy)
 		*/
 		const proxyOptions = {
-					scheme: 'scheme2',
+					scheme: 'azuread',
 					preferLocalhost: true,
 					projectNameForProxy: "@pwsimon/expo-azuread/start",
 					useProxy: true
 				},
 			options = {
-					scheme: 'scheme2',
+					scheme: 'azuread',
 					preferLocalhost: true
 				},
 			redirectUri2 = makeRedirectUri(proxyOptions); // (AuthSession.makeRedirectUri)[https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionmakeredirecturioptions]
-		// Development Build: scheme2:///
+		// Development Build: azuread:///
 		// Expo Go: exp://localhost:19000
 		// Web dev: https://localhost:19006
 		// Web prod: https://yourwebsite.com
