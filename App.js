@@ -192,7 +192,39 @@ export default function App() {
 		// Web prod: https://yourwebsite.com
 		console.log("makeRedirectUri() =>", redirectUri2);
 	}
-	const proxyStartAsync = () => {
+	const customAuthProxy = () => {
+/*
+* Das ist die variante/versuch mit dem selfHosted AuthProxy.
+* Der im Azure konfigurierte: Umleitungs-URI zeigt auf *meinen* AuthProxy
+*/
+		const authServiceUrl = encodeURIComponent("https://login.microsoftonline.com/a0225615-7f89-4786-a96e-2bd64c8db5c7/oauth2/v2.0/authorize"); // we encode this, because it will be send as a query parameter
+		const authServiceUrlParameter = `authServiceUrl=${authServiceUrl}`;
+		const authUrl = `http://localhost:1310?${authServiceUrlParameter}`;
+		const options = {
+				authUrl,
+				returnUrl: "azuread://auth" // YOUR_DEEP_LINK
+			}; // [AuthSession.startAsync(options)](https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionstartasyncoptions)
+		startAsync(options)
+			.then(authSessionResult => { // [Type AuthSessionResult](https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionresult)
+					console.log("returned: (type)", authSessionResult.type);
+				});
+	}
+	const expoAuthProxy = () => {
+/*
+* Das ist die variante/versuch mit dem Expo AuthProxy
+* eine loesung mittels: Proxy wirft die folgenden Fragen auf:
+* 1.) der Expo AuthProxy bzw. eine 'Proxy' loesung ist genrell 'deprecated'
+* 2.) der Expo AuthProxy kommt immer mit einer 'unangenehmen' sicherheits-warnung
+* In verbindung mit dem AzureAD gibt es da ein spezielles problem.
+* Ich das vom Expo AuthProxy geforderte '@' nicht verwenden ...
+* scheitert das an den [Einschraenkungen für Umleitungs-URI/Antwort-URL](https://learn.microsoft.com/de-de/azure/active-directory/develop/reply-url)
+*
+* loesungs-ansatz(e)
+* 1.) selbst gehosteter [AuthProxy](https://docs.expo.dev/versions/latest/sdk/auth-session/#proxy-service)
+* 2.) [Expo AuthProxy](https://auth.expo.io) und einen IdProvider ohne Einschraenkung beim Umleitungs-URI
+*     *keine* wirkliche option denn das feature wird kuenftig SDK > 48 nicht mehr verfuegbar sein
+*     eine Migration nach Deeplinking scheitert in kombination mit AzureAD wieder am Umleitungs-URI
+*/
 		const options = {
 				authUrl: "https://login.microsoftonline.com/a0225615-7f89-4786-a96e-2bd64c8db5c7/oauth2/v2.0/authorize",
 				// returnUrl: "",
@@ -214,7 +246,7 @@ export default function App() {
 				</Button>
 				<Button
 					title="test"
-					onPress={(e) => { _makeRedirectUri() }}>
+					onPress={(e) => { customAuthProxy() }}>
 				</Button>
 			</View>
 		);
