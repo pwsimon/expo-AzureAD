@@ -20,7 +20,8 @@
     "expo-auth-session": "~4.0.3",
     "expo-crypto": "~12.2.1",
     "expo-updates": "~0.16.4",
-    "expo-linking": "~4.0.1"
+    "expo-linking": "~4.0.1",
+    "expo-dev-client": "~2.2.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
