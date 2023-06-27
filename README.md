@@ -12,7 +12,7 @@ Sowohl die Browser als auch die Android version/variante muessen sich dazu mit d
 
 # [Run the app on mobile and web](https://docs.expo.io/introduction/walkthrough/#start-the-project)
 
-    npx expo start
+    npx expo start // within Expo Go
 
 # Prepare to: Authenticate
 
@@ -22,6 +22,18 @@ Sowohl die Browser als auch die Android version/variante muessen sich dazu mit d
 
 **Run within MobileDevice**
 
+# makeRedirectUri
+die [Expo AuthSession](https://docs.expo.dev/versions/latest/sdk/auth-session/) generiert fuer fuer jeden UseCase: 
+(Development Build, Expo Go, Web dev, Web prod, standalone-app) einen speziellen RedirectUri ...
+
+verschiedene IdProvider erlauben keinen frei definierbaren RedirectUri. z.B. scheme
+Alternativen: mit der registrierung der App bekommt man einen RedirectUri zugewiesen.
+dann, sofern moeglich, diesen als RedirectUri in der App verwenden.
+
+## UseCase: Web dev
+hier wird mittels eines [Window: open() method](https://developer.mozilla.org/en-US/docs/Web/API/Window/open) zum IdProvider navigiert.
+Da hier ein neuer browsing context erzeugt wird ist das nicht einfach mit den DeveloperTools (F12) zu untersuchen.
+Der mit dem: login/proptAsync generierte: [makeRedirectUri](https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionmakeredirecturioptions) fuer den authenticate request zeigt auf den *eigene* BaseUri.
 
 # Deploy a project to *Expo Go* hosting
 Die [Expo Go](https://docs.expo.dev/get-started/expo-go/) App kann die Anwendung direkt vom development-server laden (siehe oben).

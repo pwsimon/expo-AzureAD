@@ -13,6 +13,7 @@ import {
 import {
 	Platform,
 	StyleSheet,
+	StatusBar,
 	View,
 	Text,
 	Button } from 'react-native';
@@ -80,7 +81,9 @@ export default function App() {
 	*
 	* [uri-scheme](https://github.com/expo/expo-cli)
 	* Expo Go in Development (adjust the '127.0.0.1:19000' to match your dev server URL)
+	*
 	*     npx uri-scheme open exp://192.168.178.41:19000/--/somepath/into/app?hello=world --ios // pshome
+	*     npx uri-scheme list
 	*/
 	const baseUrl =	Linking.useURL(); 
 
@@ -169,15 +172,13 @@ export default function App() {
 }
 	}
 	const _makeRedirectUri = () => {
-		/*
-		* type [AuthSessionRedirectUriOptions](https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionredirecturioptions)
-		* "https://auth.expo.io/@your-username/your-app-slug/start"
-		* eg. https://auth.expo.io/@pwsimon/expo-azuread/start?authUrl=http://ws0021.estos.de/etapisrvsdk/solution/sso/redirect&returnUrl=http://localhost:19006/authRedirect?id_token=hurts
-		redirectUri2 = "" // [Using auth.expo.io proxy?](https://github.com/expo/fyi/blob/main/auth-proxy-migration.md#using-authexpoio-proxy)
-		*/
-		const proxyOptions = {
-					scheme: 'azuread',
-					preferLocalhost: true,
+/*
+* type [AuthSessionRedirectUriOptions](https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionredirecturioptions)
+* "https://auth.expo.io/@your-username/your-app-slug/start"
+* eg. https://auth.expo.io/@pwsimon/expo-azuread/start?authUrl=http://ws0021.estos.de/etapisrvsdk/solution/sso/redirect&returnUrl=http://localhost:19006/authRedirect?id_token=hurts
+redirectUri = "" // [Using auth.expo.io proxy?](https://github.com/expo/fyi/blob/main/auth-proxy-migration.md#using-authexpoio-proxy)
+*/
+		const expoAuthProxyOptions = {
 					projectNameForProxy: "@pwsimon/expo-azuread/start",
 					useProxy: true
 				},
@@ -185,12 +186,17 @@ export default function App() {
 					scheme: 'azuread',
 					preferLocalhost: true
 				},
-			redirectUri2 = makeRedirectUri(proxyOptions); // (AuthSession.makeRedirectUri)[https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionmakeredirecturioptions]
-		// Development Build: azuread:///
-		// Expo Go: exp://localhost:19000
-		// Web dev: https://localhost:19006
-		// Web prod: https://yourwebsite.com
-		console.log("makeRedirectUri() =>", redirectUri2);
+ 			// (AuthSession.makeRedirectUri)[https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionmakeredirecturioptions]
+			redirectUri = makeRedirectUri(expoAuthProxyOptions); // expoAuthProxyOptions | options | ...
+/*
+* die [Expo AuthSession](https://docs.expo.dev/versions/latest/sdk/auth-session/) generiert fuer fuer jeden
+* UseCase/Context: einen speziellen RedirectUri
+* Development Build: azuread:///
+* Expo Go: exp://localhost:19000
+* Web dev: https://localhost:19006
+* Web prod: https://yourwebsite.com
+*/
+		console.log("makeRedirectUri() =>", redirectUri);
 	}
 	const customAuthProxy = () => {
 /*
@@ -250,8 +256,9 @@ export default function App() {
 				</Button>
 				<Button
 					title="test"
-					onPress={(e) => { customAuthProxy() }}>
+					onPress={(e) => { _makeRedirectUri() }}>
 				</Button>
+				<StatusBar></StatusBar>
 			</View>
 		);
 }
