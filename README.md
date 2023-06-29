@@ -14,6 +14,11 @@ Sowohl die Browser als auch die Android version/variante muessen sich dazu mit d
 
     npx expo start // within Expo Go
 
+# [Start the development server](https://docs.expo.dev/develop/development-builds/use-development-builds/#start-the-development-server)
+typischerweise wird ein build (.apk) auf einem Device installiert.
+
+    npx expo start --dev-client
+
 # Prepare to: Authenticate
 
 [Azure](https://docs.expo.dev/guides/authentication/#azure)

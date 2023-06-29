@@ -144,32 +144,38 @@ export default function App() {
 * [Examples](https://docs.expo.dev/versions/latest/sdk/linking/#examples)
 * liefert einen, zum Environment/Host, passenden Url ...
 */
-		// console.log("createURL() =>", Linking.createURL("path"));
-		console.log("baseUrl:", baseUrl);
+		console.log("createURL() =>", Linking.createURL("deepLink")); // create a link into YOUR App
+		console.log("baseUrl:", baseUrl); // nur der vollstaendigkeit halber (wird nicht verwendet)
+		console.log("Platform.OS:", Platform.OS); // nur der vollstaendigkeit halber (wird nicht verwendet)
+		Linking.getInitialURL()
+			.then(sInitialURL => console.log("getInitialURL() =>", sInitialURL)); // where we come from
+
 		if("web" === Platform.OS) {
+			console.assert(baseUrl); // haben wir IMMER im fall: "web" === Platform.OS
 /*
+* UseCase: the App is executed from within: Expo Go App `npx expo start` using: ${baseUrl}
+* Web (dev): https://localhost:19006/deepLink
+* Web (prod): https://myapp.com/deepLink
+*
 * wenn wir eine SPA sind, also im Browser/Web, ist der returnUrl fuer ein einfaches: "navigate-back" ueberfluessig.
 * in allen anderen faellen koennen wir damit den workflow steuern.
-* Web (dev): https://localhost:19006/path
 */
 			// Linking.openURL(`https://auth.expo.io/@pwsimon/expo-azuread/start?authUrl=http://ws0021.estos.de/etapisrvsdk/solution/sso/redirect&returnUrl=http://localhost:19006/authRedirect?id_token=hurts`);
-			Linking.openURL(`http://ws0021.estos.de/etapisrvsdk/solution/sso/redirect`); // configure IIS reidrect: ${baseUrl}
+			// Linking.openURL(`http://ws0021.estos.de/etapisrvsdk/solution/sso/redirect`); // configure IIS reidrect: ${baseUrl}
 			// Linking.openURL(`http://ws0021.estos.de/etapisrvsdk/solution/sso/expo-linking.html?returnUrl=${baseUrl}`);
 			// Linking.openURL('https://expo.dev');
 		} else {
 /*
-* UseCase: the App is executed from within: Expo Go App `npx expo start`
-* Expo Client (dev): exp://128.0.0.1:19000/--/path
-* Expo Client (prod): exp://exp.host/@yourname/your-app/--/path
+* UseCase: the App is executed from within: (custom build) Expo Go App `npx expo start --dev-client`
+* Bare: <scheme>://path - uses provided scheme or scheme from Expo config scheme.
+* Standalone, Custom: yourscheme://deepLink
+* Expo Client (dev): exp://128.0.0.1:19000/--/deepLink // [Creating URLs](https://docs.expo.dev/guides/linking/#creating-urls)
+* Expo Client (prod): exp://u.expo.dev/[project-id]?channel-name=[channel-name]&runtime-version=[runtime-version]
 */
-			Linking.openURL(`http://ws0021.estos.de/etapisrvsdk/solution/sso/expo-linking.html?returnUrl=${baseUrl}`);
+			// Linking.openURL(`http://ws0021.estos.de/etapisrvsdk/solution/sso/expo-linking.html?returnUrl=${baseUrl}`);
 			// Linking.openURL('https://expo.dev'); // switch to installed Browser
 			// Linking.openSettings(); // the SettingsPage from Expo Go App appear
-
-/*
-* UseCase: the App is executed as: `eas build --profile development --platform android`
-*/
-}
+		}
 	}
 	const _makeRedirectUri = () => {
 /*
@@ -248,7 +254,7 @@ redirectUri = "" // [Using auth.expo.io proxy?](https://github.com/expo/fyi/blob
 
 	return (
 			<View>
-				<Text>URL: {baseUrl}</Text>
+				<Text>URL: {Linking.createURL("")}</Text>
 				<Button
 					disabled={!request}
 					title="Login"
@@ -256,7 +262,7 @@ redirectUri = "" // [Using auth.expo.io proxy?](https://github.com/expo/fyi/blob
 				</Button>
 				<Button
 					title="test"
-					onPress={(e) => { _makeRedirectUri() }}>
+					onPress={(e) => { _createURL() }}>
 				</Button>
 				<StatusBar></StatusBar>
 			</View>
