@@ -57,6 +57,7 @@ Da hier ein neuer browsing context erzeugt wird ist das nicht einfach mit den De
 Der mit dem: login/proptAsync generierte: [makeRedirectUri](https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionmakeredirecturioptions) fuer den authenticate request zeigt auf den *eigene* BaseUri.
 
 # Deploy for Android
+
 ## Deploy a project to *Expo Go* hosting
 Die [Expo Go](https://docs.expo.dev/get-started/expo-go/) App kann die Anwendung direkt vom development-server laden (siehe oben).
 Deployment-Setup idealerweise mittels [Getting started](https://docs.expo.dev/eas-update/getting-started/)
@@ -72,4 +73,9 @@ Mit dem [update](https://expo.dev/accounts/pwsimon/projects/expo-azuread/updates
     eas update
 
 # Deploy for the Web
-[GitHub Pages](https://docs.expo.dev/distribution/publishing-websites/#github-pages) or. [Static website hosting in Azure Storage](https://learn.microsoft.com/en-us/azure/storage/blobs/storage-blob-static-website)
+
+Ich Hoste das Repository aktuell bei [GitHub](https://github.com/pwsimon/expo-AzureAD) war [Azure DevOps](https://dev.azure.com/psi-estos/).
+Fuer das Web-Deploy brauche ich, zwingend, einen im Internet stehenden Service (RedirectUri).
+Das laesst sich prinzipiell mit [Azure static Web-Apps](https://learn.microsoft.com/de-de/training/modules/publish-app-service-static-web-app-api/?WT.mc_id=APC-StaticWebApps) od. [GitHub Pages](https://pages.github.com/) machen.
+
+Nachdem es aktuell mit GitHub Pages *einfacher* ist/war und ich das CI/CD Feature nicht brauche hab ich umgezogen.
