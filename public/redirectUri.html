@@ -1,11 +1,104 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-	<title>target redirectUri</title>
+	<title>OpenID Connect on the Microsoft identity platform</title>
+<script type="text/javascript">
+	const sUCSID = "ws0021.local",
+		sControllerUrl = "https://devuccontroller.ucconnect.de";
+
+	function iNetTokenVerify(sToken) {
+/*
+* using UCConnect needs: UCSID/Tenant (Mandant)
+* folgende constellation:
+* UCServer, \\ws0021\dev\procall_master (feature/PROCALL-3267-verifyJWT), 
+* AppServer, IIS
+* Achtung!
+* ein Login/CreateSession ist vermutlich einfacher denn:
+* wg. verschaerfter CORS regeln im UCConnect darf ich keine header x-sessionid mehr schicken ...
+*/
+		fetch(`${sControllerUrl}/controller/client/ucws?ucsid=${sUCSID}`)
+			.then(response => response.json())
+			.then(oDiscover => {
+				const oArgument = {
+							_type: "AsnTokenVerifyArgument",
+							sToken: sToken
+						},
+					oInit = {
+							method: "POST",
+							headers: {
+								"Content-Type": "application/json",
+								"x-ucsid": sUCSID
+							},
+							body: JSON.stringify(oArgument)
+						};
+					return fetch(`${oDiscover.redirect}/ws/direct/asnTokenVerify`, oInit)
+				})
+			.then(response => response.json())
+			.then(fnHandleTokenVerifyResult);
+	}
+	function iNetLoginIdToken(sToken) {
+		fetch(`${sControllerUrl}/controller/client/ucws?ucsid=${sUCSID}`)
+			.then(response => response.json())
+			.then(oDiscover => {
+				const oNegotiate = {
+							iClientProtocolVersion: 70
+						},
+					oInit = {
+							method: "POST",
+							headers: {
+								"Content-Type": "application/json",
+								"Authorization": "JWT " + sToken,
+								"x-epid": sUCSID,
+								"x-ucsid": sUCSID
+							},
+							body: JSON.stringify(oNegotiate)
+						};
+					return fetch(`${oDiscover.redirect}/ws/client/createsession?clientappid=9`, oInit)
+				})
+			.then(response => response.json())
+			.then(oSession => {
+				document.getElementById("lblUser").textContent =oSession.ownContact.asnRemoteContact.u8sCtiServerUserName;
+				if(oSession.ownContact.asnRemoteContact.optionalParams.jpegPhoto)
+					document.getElementById("imgUser").src = `data:image/jpeg;base64,${oSession.ownContact.asnRemoteContact.optionalParams.jpegPhoto.binarydata}`;
+			});
+	}
+	function fnHandleTokenVerifyResult(oTokenVerifyResult) {
+		console.log(oTokenVerifyResult);
+		document.getElementById("lblUser").textContent = oTokenVerifyResult.asnUserContact.u8sCtiServerUserName;
+	}
+	window.addEventListener("load", () => {
+		console.log("hash:", document.location.hash);
+
+		// das funktioniert (http://ecticlient.local) natuerlich NUR in einem ProCall WebViewHost
+		// in einem StandaloneBrowser geg. UCConnect brauchen wir einen WebSocket
+		const nSessionState = document.location.hash.indexOf("&session_state"),
+			sToken = document.location.hash.substring(10, nSessionState);
+
+		iNetTokenVerify(sToken); // ein localTokenVerify(sToken) macht mit GitHub Pages KEINEN sinn
+		// iNetLoginIdToken(sToken);
+	});
+</script>
 </head>
-
 <body>
+	<!--
+		Diese [Seite](https://pwsimon.github.io/expo-AzureAD/public/redirectUri.html) wird von: Expo Go (standalone) und SPA verwendet.
+		Hinweise:
+		- local access: http://localhost/vscode/expo-azuread/public/redirecturi.html#id_token=XYZ&session_state
+		- die UI bzw. das logging/tracing ist schwierig zu sehen/debuggen denn der Browser wird vom framework sofort geschlossen.
+		  siehe: WebBrowser.maybeCompleteAuthSession()
+		- die hartcodierten elemente: ucsid, controllerUrl, ...
+		  ja nur fuer das debugging ...
+		  setzt Branch: feature/PROCALL-3267-verifyJWT voraus.
+		Expo Go (standalone): der Code hier laeuft nur zu Debuggingzwecken
+			das id_token wird mittels: expo-auth-session, TokenResponse.fromQueryParams in der App extrahiert
+		SPA: der Code hier laeuft nur zu Debuggingzwecken
+		Anwendungen, die client-local seiten (secure) bereitstellen koennen z.B. ProCall-Win32 haben eigene Seiten/Logik
+		z.B. http://ecticlient.local/binaries/redirectUri.html
+	-->
+	<p>
+		ensure valid <a href="https://login.microsoftonline.com/a0225615-7f89-4786-a96e-2bd64c8db5c7/discovery/v2.0/keys">jwks_uri</a> to: <i>\config\AzureTenantCertificates.json</i>
+	</p>
+	<h3>Authenticated User: <span id="lblUser"></span></h3>
+	<img id="imgUser" src="" />
 </body>
-
 </html>
