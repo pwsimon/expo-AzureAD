@@ -18,6 +18,8 @@ import {
 	Text,
 	Button } from 'react-native';
 
+// das funktioniert nur ...
+// The method should be invoked on the page that the window redirects to.
 WebBrowser.maybeCompleteAuthSession();
 
 export default function App() {
@@ -29,7 +31,9 @@ export default function App() {
 			scopes: ['openid', 'profile', 'email', 'offline_access'],
 			responseType: ResponseType.IdToken, // https://docs.expo.dev/versions/latest/sdk/auth-session/#idtoken
 			extraParams: { nonce: "nonce" }, // https://www.typescriptlang.org/docs/handbook/utility-types.html#recordkeys-type
-			redirectUri: 'https://pwsimon.github.io/expo-AzureAD/public/redirectUri.html'
+			redirectUri: makeRedirectUri({
+					scheme: 'azuread' // https://docs.expo.dev/versions/latest/config/app/#scheme
+				})
 		}
 	const [
 			request, // [Class AuthRequest](https://docs.expo.dev/versions/latest/sdk/auth-session/#authrequest)
@@ -187,11 +191,10 @@ redirectUri = "" // [Using auth.expo.io proxy?](https://github.com/expo/fyi/blob
 					useProxy: true
 				},
 			options = {
-					scheme: 'azuread',
-					preferLocalhost: true
+					scheme: 'azuread'
 				},
  			// (AuthSession.makeRedirectUri)[https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionmakeredirecturioptions]
-			redirectUri = makeRedirectUri(expoAuthProxyOptions); // expoAuthProxyOptions | options | ...
+			redirectUri = makeRedirectUri(options); // expoAuthProxyOptions | options | ...
 /*
 * die [Expo AuthSession](https://docs.expo.dev/versions/latest/sdk/auth-session/) generiert fuer fuer jeden
 * UseCase/Context: einen speziellen RedirectUri
@@ -260,7 +263,7 @@ redirectUri = "" // [Using auth.expo.io proxy?](https://github.com/expo/fyi/blob
 				</Button>
 				<Button
 					title="test"
-					onPress={(e) => { _createURL() }}>
+					onPress={(e) => { _makeRedirectUri() }}>
 				</Button>
 				<StatusBar></StatusBar>
 			</View>

@@ -72,10 +72,10 @@ Mit dem [update](https://expo.dev/accounts/pwsimon/projects/expo-azuread/updates
 
     eas update
 
-# Deploy for the Web
+# [Publish websites](https://docs.expo.dev/distribution/publishing-websites/)
 
 Ich Hoste das Repository aktuell bei [GitHub](https://github.com/pwsimon/expo-AzureAD) war [Azure DevOps](https://dev.azure.com/psi-estos/).
 Fuer das Web-Deploy brauche ich, zwingend, einen im Internet stehenden Service (RedirectUri).
 Das laesst sich prinzipiell mit [Azure static Web-Apps](https://learn.microsoft.com/de-de/training/modules/publish-app-service-static-web-app-api/?WT.mc_id=APC-StaticWebApps) od. [GitHub Pages](https://pages.github.com/) machen.
 
-Nachdem es aktuell mit GitHub Pages *einfacher* ist/war und ich das CI/CD Feature nicht brauche hab ich umgezogen.
+Nachdem es aktuell mit [GitHub Pages](https://docs.expo.dev/distribution/publishing-websites/#github-pages) *einfacher* ist/war und ich das CI/CD Feature nicht brauche hab ich umgezogen.
