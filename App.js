@@ -29,9 +29,7 @@ export default function App() {
 			scopes: ['openid', 'profile', 'email', 'offline_access'],
 			responseType: ResponseType.IdToken, // https://docs.expo.dev/versions/latest/sdk/auth-session/#idtoken
 			extraParams: { nonce: "nonce" }, // https://www.typescriptlang.org/docs/handbook/utility-types.html#recordkeys-type
-			redirectUri: makeRedirectUri({
-					scheme: 'azuread' // https://docs.expo.dev/versions/latest/config/app/#scheme
-				})
+			redirectUri: 'https://pwsimon.github.io/expo-AzureAD/public/redirectUri.html'
 		}
 	const [
 			request, // [Class AuthRequest](https://docs.expo.dev/versions/latest/sdk/auth-session/#authrequest)

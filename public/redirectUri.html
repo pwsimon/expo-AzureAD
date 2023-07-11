@@ -67,12 +67,17 @@
 		document.getElementById("lblUser").textContent = oTokenVerifyResult.asnUserContact.u8sCtiServerUserName;
 	}
 	window.addEventListener("load", () => {
+/*
+* cut/clip/extract the: id_token from: location.hash
+* the order of the params/parts within the query string is not deterministic!
+* the vary from IdProvider and Authentication-Request.
 		console.log("hash:", document.location.hash);
-
-		// das funktioniert (http://ecticlient.local) natuerlich NUR in einem ProCall WebViewHost
-		// in einem StandaloneBrowser geg. UCConnect brauchen wir einen WebSocket
-		const nSessionState = document.location.hash.indexOf("&session_state"),
-			sToken = document.location.hash.substring(10, nSessionState);
+*/
+		const searchParams = new URLSearchParams(document.location.hash.substring(1));
+		const sToken = searchParams.get("id_token");
+		console.assert(sToken.length, "no id_token within querystring!");
+		const regexJWT = /[^A-Za-z0-9+/=._\-]/g; // valid charset for base64-encoded strings incl. JWT specials '.', '_', and '-'
+		console.assert(!sToken.match(regexJWT), "invalid id_token"); // [String.prototype.match()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/match)
 
 		iNetTokenVerify(sToken); // ein localTokenVerify(sToken) macht mit GitHub Pages KEINEN sinn
 		// iNetLoginIdToken(sToken);
