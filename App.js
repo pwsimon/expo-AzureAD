@@ -32,6 +32,7 @@ export default function App() {
 			responseType: ResponseType.IdToken, // https://docs.expo.dev/versions/latest/sdk/auth-session/#idtoken
 			extraParams: { nonce: "nonce" }, // https://www.typescriptlang.org/docs/handbook/utility-types.html#recordkeys-type
 			redirectUri: makeRedirectUri({
+					path: 'expo-AzureAD', // der RedirectUri im AzurePortal: https://pwsimon.github.io/expo-AzureAD
 					scheme: 'azuread' // https://docs.expo.dev/versions/latest/config/app/#scheme
 				})
 		}
@@ -191,6 +192,7 @@ redirectUri = "" // [Using auth.expo.io proxy?](https://github.com/expo/fyi/blob
 					useProxy: true
 				},
 			options = {
+					path: 'expo-AzureAD',
 					scheme: 'azuread'
 				},
  			// (AuthSession.makeRedirectUri)[https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionmakeredirecturioptions]
