@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.js": "/expo-azuread/static/js/main.b0a9f0a7.js",
-    "static/js/801.10044f84.js": "/expo-azuread/static/js/801.10044f84.js",
-    "favicon.ico": "/expo-azuread/favicon.ico",
-    "index.html": "/expo-azuread/index.html",
-    "favicon-32.png": "/expo-azuread/favicon-32.png",
-    "favicon-16.png": "/expo-azuread/favicon-16.png",
-    "manifest.json": "/expo-azuread/manifest.json",
-    "serve.json": "/expo-azuread/serve.json",
-    "main.b0a9f0a7.js.map": "/expo-azuread/static/js/main.b0a9f0a7.js.map",
-    "801.10044f84.js.map": "/expo-azuread/static/js/801.10044f84.js.map"
+    "main.js": "/expo-AzureAD/static/js/main.b0a9f0a7.js",
+    "static/js/801.10044f84.js": "/expo-AzureAD/static/js/801.10044f84.js",
+    "favicon.ico": "/expo-AzureAD/favicon.ico",
+    "index.html": "/expo-AzureAD/index.html",
+    "favicon-32.png": "/expo-AzureAD/favicon-32.png",
+    "favicon-16.png": "/expo-AzureAD/favicon-16.png",
+    "manifest.json": "/expo-AzureAD/manifest.json",
+    "serve.json": "/expo-AzureAD/serve.json",
+    "main.b0a9f0a7.js.map": "/expo-AzureAD/static/js/main.b0a9f0a7.js.map",
+    "801.10044f84.js.map": "/expo-AzureAD/static/js/801.10044f84.js.map"
   },
   "entrypoints": [
     "static/js/801.10044f84.js",
