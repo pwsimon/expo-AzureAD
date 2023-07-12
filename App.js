@@ -8,7 +8,9 @@ import {
 		exchangeCodeAsync,
 		startAsync,
 		TokenResponse, // [Classes](https://docs.expo.dev/versions/latest/sdk/auth-session/#classes)
-		ResponseType // [Types](https://docs.expo.dev/versions/latest/sdk/auth-session/#types)
+		AuthRequest,
+		ResponseType, // [Types](https://docs.expo.dev/versions/latest/sdk/auth-session/#types)
+		Prompt
 	} from 'expo-auth-session'; // [Expo AuthSession](https://docs.expo.dev/versions/latest/sdk/auth-session/)
 import {
 	Platform,
@@ -23,19 +25,26 @@ import {
 WebBrowser.maybeCompleteAuthSession();
 
 export default function App() {
-	// interface [DiscoveryDocument](https://docs.expo.dev/versions/latest/sdk/auth-session/#discoverydocument)
-	const discoveryDoc = useAutoDiscovery('https://login.microsoftonline.com/a0225615-7f89-4786-a96e-2bd64c8db5c7/v2.0'); // Endpoint
-
+	/*
+	* (AuthSession.makeRedirectUri)[https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionmakeredirecturioptions]
+	* wir brauchen je nach start-modus (Development, Productive) mehrere RedirectUri's im AzurePortal
+	* Development: http://localhost:19006/expo-AzureAD
+	* Productive: https://pwsimon.github.io/expo-AzureAD
+	*/
+	const makeRedirectUriOptions = {
+			path: 'expo-AzureAD', // der RedirectUri im AzurePortal: https://pwsimon.github.io/expo-AzureAD
+			scheme: 'azuread' // https://docs.expo.dev/versions/latest/config/app/#scheme
+		};
 	const requestConfig = { // interface [AuthRequestConfig](https://docs.expo.dev/versions/latest/sdk/auth-session/#authrequestconfig)
 			clientId: 'a26fba9c-c752-4af1-8be4-ba80d2a4d36e',
 			scopes: ['openid', 'profile', 'email', 'offline_access'],
 			responseType: ResponseType.IdToken, // https://docs.expo.dev/versions/latest/sdk/auth-session/#idtoken
 			extraParams: { nonce: "nonce" }, // https://www.typescriptlang.org/docs/handbook/utility-types.html#recordkeys-type
-			redirectUri: makeRedirectUri({
-					path: 'expo-AzureAD', // der RedirectUri im AzurePortal: https://pwsimon.github.io/expo-AzureAD
-					scheme: 'azuread' // https://docs.expo.dev/versions/latest/config/app/#scheme
-				})
+			// prompt: Prompt.None, // login check
+			redirectUri: makeRedirectUri(makeRedirectUriOptions)
 		}
+	// interface [DiscoveryDocument](https://docs.expo.dev/versions/latest/sdk/auth-session/#discoverydocument)
+	const discoveryDoc = useAutoDiscovery('https://login.microsoftonline.com/a0225615-7f89-4786-a96e-2bd64c8db5c7/v2.0'); // Endpoint
 	const [
 			request, // [Class AuthRequest](https://docs.expo.dev/versions/latest/sdk/auth-session/#authrequest)
 			response, // [Type AuthSessionResult](https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionresult)
@@ -48,12 +57,15 @@ export default function App() {
 	* siehe auch: promptAsync.then()
 	*/
 	React.useEffect(() => {
-			if (response && response.type === 'success') {
+			if (!response) return;
+			if ('success' === response.type) {
 				const oTR = TokenResponse.fromQueryParams(response.params),
 					token = response.params.access_token;
 
 				console.log("response changed => type:", response.type);
 				iNetTokenVerify(oTR.idToken);
+			} else if ('error' === response.type) {
+				console.log(response);
 			}
 		}, [response]);
 
@@ -62,10 +74,10 @@ export default function App() {
 	* wir fangen und behandeln mit dem "addEventListener("url", ...") die Navigation
 	*/
 	React.useEffect(() => {
-		/*
-		* [Linking.addEventListener(type, handler)](https://docs.expo.dev/versions/latest/sdk/linking/#linkingaddeventlistenertype-handler)
-		* [EventType](https://docs.expo.dev/versions/latest/sdk/linking/#eventtype)
-		*/
+/*
+* [Linking.addEventListener(type, handler)](https://docs.expo.dev/versions/latest/sdk/linking/#linkingaddeventlistenertype-handler)
+* [EventType](https://docs.expo.dev/versions/latest/sdk/linking/#eventtype)
+*/
 		console.log("App mount");
 		Linking.addEventListener("url", (e) => {
 /*
@@ -92,12 +104,16 @@ export default function App() {
 
 	const login = () => {
 		const promptOptions = null; // [AuthRequestPromptOptions](https://docs.expo.dev/versions/latest/sdk/auth-session/#authrequestpromptoptions)
-		promptAsync(/*promptOptions*/)
+		promptAsync(/*discoveryDoc, promptOptions*/)
 			.then(authSessionResult => { // [Type AuthSessionResult](https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionresult)
 					const oTR = TokenResponse.fromQueryParams(authSessionResult.params);
 					// console.log("fullfilled => type:", authSessionResult.type);
 				})
 			.catch((e) => { console.log("exception:", e); });
+	}
+	const logoff = () => {
+		// console.log("logoff()", discoveryDoc.endSessionEndpoint);
+		Linking.openURL(discoveryDoc.endSessionEndpoint);
 	}
 	const sUCSID = "ws0021.local";
 	const iNetTokenVerify = (sToken) => {
@@ -130,6 +146,29 @@ export default function App() {
 			.then(response => response.json())
 			.then(oTokenVerifyResult => console.log(oTokenVerifyResult) )
 			.catch(e =>  console.log("iNetTokenVerify() failed:", e));
+	}
+	const iNetLogin = (sToken) => {
+		console.log("iNetLogin()");
+	}
+	const checkNoUserInteraction = () => {
+/*
+* try login with: Prompt.None to check userinteraction is required
+*/
+		const requestConfig = { // interface [AuthRequestConfig](https://docs.expo.dev/versions/latest/sdk/auth-session/#authrequestconfig)
+				clientId: 'a26fba9c-c752-4af1-8be4-ba80d2a4d36e',
+				scopes: ['openid', 'profile', 'email', 'offline_access'],
+				responseType: ResponseType.IdToken, // https://docs.expo.dev/versions/latest/sdk/auth-session/#idtoken
+				extraParams: { nonce: "nonce" }, // https://www.typescriptlang.org/docs/handbook/utility-types.html#recordkeys-type
+				prompt: Prompt.None,
+				redirectUri: makeRedirectUri(makeRedirectUriOptions)
+			},
+		_request = new AuthRequest(requestConfig);
+		_request.promptAsync(discoveryDoc)
+			.then(authSessionResult => {
+				const oTR = TokenResponse.fromQueryParams(authSessionResult.params);
+				console.log("idToken:", oTR.idToken);
+				console.log("AuthSessionResult.type:", authSessionResult.type); // [AuthRequest.type](https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionresult)
+			});
 	}
 	const exchangeCode = () => {
 		const config = { // interface [AccessTokenRequestConfig](https://docs.expo.dev/versions/latest/sdk/auth-session/#accesstokenrequestconfig)
@@ -264,8 +303,12 @@ redirectUri = "" // [Using auth.expo.io proxy?](https://github.com/expo/fyi/blob
 					onPress={(e) => { login() }}>
 				</Button>
 				<Button
+					title="Logout"
+					onPress={e => { logoff() }}>
+				</Button>
+				<Button
 					title="test"
-					onPress={(e) => { _makeRedirectUri() }}>
+					onPress={(e) => { checkNoUserInteraction() }}>
 				</Button>
 				<StatusBar></StatusBar>
 			</View>
