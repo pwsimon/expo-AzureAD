@@ -58,12 +58,13 @@ export default function App() {
 	*/
 	React.useEffect(() => {
 			if (!response) return;
+			console.log("response changed => type:", response.type);
 			if ('success' === response.type) {
 				const oTR = TokenResponse.fromQueryParams(response.params),
 					token = response.params.access_token;
 
-				console.log("response changed => type:", response.type);
 				iNetTokenVerify(oTR.idToken);
+				// iNetLogin(oTR.idToken);
 			} else if ('error' === response.type) {
 				console.log(response);
 			}
@@ -102,7 +103,7 @@ export default function App() {
 	*/
 	const baseUrl =	Linking.useURL(); 
 
-	const login = () => {
+	const authenticate = () => {
 		const promptOptions = null; // [AuthRequestPromptOptions](https://docs.expo.dev/versions/latest/sdk/auth-session/#authrequestpromptoptions)
 		promptAsync(/*discoveryDoc, promptOptions*/)
 			.then(authSessionResult => { // [Type AuthSessionResult](https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionresult)
@@ -116,6 +117,8 @@ export default function App() {
 		Linking.openURL(discoveryDoc.endSessionEndpoint);
 	}
 	const sUCSID = "ws0021.local";
+	var webSocket = null;
+	const mapRR = [];
 	const iNetTokenVerify = (sToken) => {
 /*
 * using UCConnect needs: UCSID/Tenant (Mandant)
@@ -148,9 +151,75 @@ export default function App() {
 			.catch(e =>  console.log("iNetTokenVerify() failed:", e));
 	}
 	const iNetLogin = (sToken) => {
-		console.log("iNetLogin()");
+		var sOrigin;
+
+		console.assert(sToken.length, "missing parameter: sToken");
+		fetch(`https://devuccontroller.ucconnect.de/controller/client/ucws?ucsid=${sUCSID}`)
+			.then(response => response.json())
+			.then(oDiscover => {
+					sOrigin = oDiscover.redirect;
+					let oInit = {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+							Authorization: "JWT " + sToken,
+							"X-EPID": sUCSID,
+							"X-UCSID": sUCSID
+						},
+						body: JSON.stringify({ negotiate: { iClientProtocolVersion: 70 } }) // 61
+					};
+					return fetch(`${sOrigin}/ws/client/createsession?clientappid=9`, oInit)
+				})
+			.then(response => response.json())
+			.then(oSession => {
+					let sWSOrigin1 = sOrigin + "/ws/client/websocket?x-ucsessionid=" + oSession.sessionid,
+						sWSOrigin2 = sWSOrigin1.replace("https://", "wss://"),
+						sWSOrigin3 = sWSOrigin2.replace("http://", "ws://");
+
+					return new Promise((resolve, reject) => {
+							let webSocket = new WebSocket(sWSOrigin3);
+							webSocket.addEventListener("open", event => resolve(webSocket));
+						});
+				})
+			.then(oWebSocket => {
+					webSocket = oWebSocket;
+					const oArgument = {
+							// _type: "AsnTokenVerifyArgument", // generated from: sOperation by wssSend
+							sToken: sToken
+						};
+					wssSend("TokenVerify", oArgument);
+				})
+			.catch(e =>  console.log("iNetLogin() failed:", e));
 	}
-	const checkNoUserInteraction = () => {
+	const createInvokeID = () => {
+		var sId = Math.random().toString().substr(2, 9);
+		return parseInt(sId);
+	}
+	const wssSend = (sOperation, oArg, fnFulfilled, fnRejected) => {
+		const oFrame = {
+					invoke: {
+						invokeID: createInvokeID(), // das ist die "InvokeID" um die antwort/response einem request zuzuordnen
+						operationName: "asn" + sOperation
+					}
+				},
+			oCBs = {
+					fnFulfilled: "function" === typeof fnFulfilled ? fnFulfilled : null,
+					fnRejected: "function" === typeof fnRejected ? fnRejected : null
+				};
+	
+		oFrame.invoke.argument = oArg;
+		oFrame.invoke.argument._type = 'Asn' + sOperation + 'Argument';
+	
+		mapRR[oFrame.invoke.invokeID] = oCBs;
+		webSocket.send(window.JSON.stringify(oFrame));
+	}
+	const setAvailabe = () => {
+		// authenticate
+		// login
+		// enterLoop
+		// setPresence
+	}
+	const getIdTokenAsync = (ePrompt) => {
 /*
 * try login with: Prompt.None to check userinteraction is required
 */
@@ -159,11 +228,14 @@ export default function App() {
 				scopes: ['openid', 'profile', 'email', 'offline_access'],
 				responseType: ResponseType.IdToken, // https://docs.expo.dev/versions/latest/sdk/auth-session/#idtoken
 				extraParams: { nonce: "nonce" }, // https://www.typescriptlang.org/docs/handbook/utility-types.html#recordkeys-type
-				prompt: Prompt.None,
+				prompt: ePrompt,
 				redirectUri: makeRedirectUri(makeRedirectUriOptions)
 			},
 		_request = new AuthRequest(requestConfig);
-		_request.promptAsync(discoveryDoc)
+		return _request.promptAsync(discoveryDoc);
+	}
+	const checkNoUserInteraction = () => {
+		getIdTokenAsync(Prompt.None)
 			.then(authSessionResult => {
 				const oTR = TokenResponse.fromQueryParams(authSessionResult.params);
 				console.log("idToken:", oTR.idToken);
@@ -300,7 +372,7 @@ redirectUri = "" // [Using auth.expo.io proxy?](https://github.com/expo/fyi/blob
 				<Button
 					disabled={!request}
 					title="Login"
-					onPress={(e) => { login() }}>
+					onPress={(e) => { authenticate() }}>
 				</Button>
 				<Button
 					title="Logout"
