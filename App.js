@@ -43,8 +43,23 @@ export default function App() {
 			// prompt: Prompt.None, // login check
 			redirectUri: makeRedirectUri(makeRedirectUriOptions)
 		}
-	// interface [DiscoveryDocument](https://docs.expo.dev/versions/latest/sdk/auth-session/#discoverydocument)
+
+	/*
+	* wir brauchen das: discoveryDoc an drei stellen.
+	* 1.) fuer das: authenticate/promptAsync() Prompt.Login
+	* 2.) fuer das: authenticate/getIdTokenAsync() Prompt.None
+	* 3.) fuer das: logoff()
+	* interface [DiscoveryDocument](https://docs.expo.dev/versions/latest/sdk/auth-session/#discoverydocument)
+	*/
 	const discoveryDoc = useAutoDiscovery('https://login.microsoftonline.com/a0225615-7f89-4786-a96e-2bd64c8db5c7/v2.0'); // Endpoint
+	React.useEffect(() => {
+/*
+* getriggert wird das fetch durch den: useAutoDiscovery Hook
+* console.log("discoveryDoc changed");
+*/
+			checkNoUserInteraction();
+		}, [discoveryDoc]);
+
 	const [
 			request, // [Class AuthRequest](https://docs.expo.dev/versions/latest/sdk/auth-session/#authrequest)
 			response, // [Type AuthSessionResult](https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionresult)
@@ -116,20 +131,25 @@ export default function App() {
 		// console.log("logoff()", discoveryDoc.endSessionEndpoint);
 		Linking.openURL(discoveryDoc.endSessionEndpoint);
 	}
-	const sUCSID = "ws0021.local";
-	var webSocket = null;
-	const mapRR = [];
-	const iNetTokenVerify = (sToken) => {
 /*
 * using UCConnect needs: UCSID/Tenant (Mandant)
 * folgende constellation:
-* UCServer, \\ws0021\dev\procall_master (feature/PROCALL-3267-verifyJWT), 
-* AppServer, IIS
+* UCServer: \\ws0021\dev\procall_master (feature/PROCALL-3267-verifyJWT),
+* [UCConnect Environment's](https://wiki.estos.de/display/DEV/Development+und+Staging+System)
+* prod: "ws0021.local(riroyabihi)", https://portal.ucconnect.de,    https://uccontroller.ucconnect.de
+* dev:  "ws0021.local(holamobequ)", https://devportal.ucconnect.de, https://devuccontroller.ucconnect.de
+*   das: (dev) UCConnect ist eher zweite wahl (nicht stabil)
+* AppServer: expo Development-Server, GitHub Pages
 * Achtung!
 * ein Login/CreateSession ist vermutlich einfacher denn:
 * wg. verschaerfter CORS regeln im UCConnect darf ich keine header x-sessionid mehr schicken ...
 */
-		fetch(`https://devuccontroller.ucconnect.de/controller/client/ucws?ucsid=${sUCSID}`)
+	const webSocket = React.useRef();
+	const sUCControllerUrl = "https://devuccontroller.ucconnect.de";
+	const sUCSID = "ws0021.local";
+	const mapRR = [];
+	const iNetTokenVerify = (sToken) => {
+		fetch(`${sUCControllerUrl}/controller/client/ucws?ucsid=${sUCSID}`)
 			.then(response => response.json())
 			.then(oDiscover => {
 				const oArgument = {
@@ -150,11 +170,11 @@ export default function App() {
 			.then(oTokenVerifyResult => console.log(oTokenVerifyResult) )
 			.catch(e =>  console.log("iNetTokenVerify() failed:", e));
 	}
-	const iNetLogin = (sToken) => {
+	const iNetLoginAsync = (sToken) => {
 		var sOrigin;
 
 		console.assert(sToken.length, "missing parameter: sToken");
-		fetch(`https://devuccontroller.ucconnect.de/controller/client/ucws?ucsid=${sUCSID}`)
+		return fetch(`${sUCControllerUrl}/controller/client/ucws?ucsid=${sUCSID}`)
 			.then(response => response.json())
 			.then(oDiscover => {
 					sOrigin = oDiscover.redirect;
@@ -180,9 +200,12 @@ export default function App() {
 							let webSocket = new WebSocket(sWSOrigin3);
 							webSocket.addEventListener("open", event => resolve(webSocket));
 						});
-				})
+				});
+	}
+	const iNetLogin = (sToken) => {
+		iNetLoginAsync(sToken)
 			.then(oWebSocket => {
-					webSocket = oWebSocket;
+					webSocket.current = oWebSocket;
 					const oArgument = {
 							// _type: "AsnTokenVerifyArgument", // generated from: sOperation by wssSend
 							sToken: sToken
@@ -211,13 +234,33 @@ export default function App() {
 		oFrame.invoke.argument._type = 'Asn' + sOperation + 'Argument';
 	
 		mapRR[oFrame.invoke.invokeID] = oCBs;
-		webSocket.send(window.JSON.stringify(oFrame));
+		webSocket.current.send(window.JSON.stringify(oFrame));
 	}
 	const setAvailabe = () => {
 		// authenticate
 		// login
 		// enterLoop
 		// setPresence
+		if(WebSocket.OPEN === webSocket.current.readyState) {
+			const oUpdateMyAbsentState = {
+					// _type: "AsnUpdateMyAbsentStateArgument", // generated from: sOperation by wssSend
+					absentstate: {
+					}
+				};
+			// wssSend("UpdateMyAbsentState", oUpdateMyAbsentState);
+			const oAbsentStateSetUser = {
+					// _type: "AsnAbsentStateSetUserArgument", // generated from: sOperation by wssSend
+					absentstate: {
+						u8sContactId: "sip:psi@estos.de",
+						u8sUsername: "",
+						stTimeFrom: "",
+						stTimeTo: "",
+						iAbsentState: 0, // eABSENTSTATENOTABSENT(0), Available
+						u8sMessage: ""
+					}
+				};
+			wssSend("AbsentStateSetUser", oAbsentStateSetUser);
+		}
 	}
 	const getIdTokenAsync = (ePrompt) => {
 /*
@@ -234,13 +277,24 @@ export default function App() {
 		_request = new AuthRequest(requestConfig);
 		return _request.promptAsync(discoveryDoc);
 	}
+	const [ bNeedsUserInteraction, SetNeedsUserInteraction ] = React.useState(true);
 	const checkNoUserInteraction = () => {
 		getIdTokenAsync(Prompt.None)
 			.then(authSessionResult => {
-				const oTR = TokenResponse.fromQueryParams(authSessionResult.params);
-				console.log("idToken:", oTR.idToken);
-				console.log("AuthSessionResult.type:", authSessionResult.type); // [AuthRequest.type](https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionresult)
-			});
+					console.log("AuthSessionResult.type:", authSessionResult.type); // [AuthRequest.type](https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionresult)
+					if("success" !== authSessionResult.type)
+						throw new Error(authSessionResult.error.message); // "requires interaction"
+
+					const oTR = TokenResponse.fromQueryParams(authSessionResult.params);
+					console.log("idToken:", oTR.idToken);
+					return iNetLoginAsync(oTR.idToken);
+				})
+			.then(oWebSocket => {
+					webSocket.current = oWebSocket;
+					console.log("LoggedIn! (authenticated, connected and WebSocket establish'ed)")
+					SetNeedsUserInteraction(false);
+				})
+			.catch(e => console.log("checkNoUserInteraction() failed:", e));
 	}
 	const exchangeCode = () => {
 		const config = { // interface [AccessTokenRequestConfig](https://docs.expo.dev/versions/latest/sdk/auth-session/#accesstokenrequestconfig)
@@ -370,17 +424,19 @@ redirectUri = "" // [Using auth.expo.io proxy?](https://github.com/expo/fyi/blob
 			<View>
 				<Text>URL: {Linking.createURL("")}</Text>
 				<Button
-					disabled={!request}
+					disabled={!request || !bNeedsUserInteraction}
 					title="Login"
 					onPress={(e) => { authenticate() }}>
 				</Button>
 				<Button
+					disabled={!discoveryDoc}
 					title="Logout"
 					onPress={e => { logoff() }}>
 				</Button>
 				<Button
+					disable={!discoveryDoc}
 					title="test"
-					onPress={(e) => { checkNoUserInteraction() }}>
+					onPress={(e) => { setAvailabe() }}>
 				</Button>
 				<StatusBar></StatusBar>
 			</View>

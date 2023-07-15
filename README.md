@@ -79,3 +79,11 @@ Fuer das Web-Deploy brauche ich, zwingend, einen im Internet stehenden Service (
 Das laesst sich prinzipiell mit [Azure static Web-Apps](https://learn.microsoft.com/de-de/training/modules/publish-app-service-static-web-app-api/?WT.mc_id=APC-StaticWebApps) od. [GitHub Pages](https://pages.github.com/) machen.
 
 Nachdem es aktuell mit [GitHub Pages](https://docs.expo.dev/distribution/publishing-websites/#github-pages) *einfacher* ist/war und ich das CI/CD Feature nicht brauche hab ich umgezogen.
+
+# Feature (autoLogin)
+
+ich will mit dem oeffnen der App automatisch angemeldet sein.
+d.H. ich fuehre ein `checkNoUserInteraction()` durch.
+wenn das: `'success' === authSessionResult.type` liefert fuehre ich ein: `iNetLoginAsync()` durch
+andernfalls wird der Login Button enabled.
+Das ist dann der UI Indikator das der Benutzer sich explizit anmelden `authenticate()` muss!
