@@ -251,12 +251,14 @@ export default function App() {
 			const oAbsentStateSetUser = {
 					// _type: "AsnAbsentStateSetUserArgument", // generated from: sOperation by wssSend
 					absentstate: {
-						u8sContactId: "sip:psi@estos.de",
+						u8sContactId: "sip:psi@ws0021.local",
 						u8sUsername: "",
 						stTimeFrom: "",
 						stTimeTo: "",
 						iAbsentState: 0, // eABSENTSTATENOTABSENT(0), Available
-						u8sMessage: ""
+						u8sMessage: "", // Deprecated, should be empty.
+						u8sAbsentReason: "", // Deprecated, should be empty.
+						iPresenceState: 0 // ignored by the server
 					}
 				};
 			wssSend("AbsentStateSetUser", oAbsentStateSetUser);
