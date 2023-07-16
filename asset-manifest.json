@@ -1,6 +1,6 @@
 {
   "files": {
-    "main.js": "/expo-AzureAD/static/js/main.56b51ba7.js",
+    "main.js": "/expo-AzureAD/static/js/main.2031985c.js",
     "static/js/801.10044f84.js": "/expo-AzureAD/static/js/801.10044f84.js",
     "favicon.ico": "/expo-AzureAD/favicon.ico",
     "index.html": "/expo-AzureAD/index.html",
@@ -8,11 +8,11 @@
     "favicon-16.png": "/expo-AzureAD/favicon-16.png",
     "manifest.json": "/expo-AzureAD/manifest.json",
     "serve.json": "/expo-AzureAD/serve.json",
-    "main.56b51ba7.js.map": "/expo-AzureAD/static/js/main.56b51ba7.js.map",
+    "main.2031985c.js.map": "/expo-AzureAD/static/js/main.2031985c.js.map",
     "801.10044f84.js.map": "/expo-AzureAD/static/js/801.10044f84.js.map"
   },
   "entrypoints": [
     "static/js/801.10044f84.js",
-    "static/js/main.56b51ba7.js"
+    "static/js/main.2031985c.js"
   ]
 }
