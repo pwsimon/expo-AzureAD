@@ -57,7 +57,8 @@ export default function App() {
 * getriggert wird das fetch durch den: useAutoDiscovery Hook
 * console.log("discoveryDoc changed");
 */
-			checkNoUserInteraction();
+			if(discoveryDoc)
+				checkNoUserInteraction();
 		}, [discoveryDoc]);
 
 	const [
@@ -78,8 +79,13 @@ export default function App() {
 				const oTR = TokenResponse.fromQueryParams(response.params),
 					token = response.params.access_token;
 
-				iNetTokenVerify(oTR.idToken);
-				// iNetLogin(oTR.idToken);
+				// iNetTokenVerify(oTR.idToken);
+				iNetLoginAsync(oTR.idToken)
+				.then(oWebSocket => {
+						webSocket.current = oWebSocket;
+						SetNeedsUserInteraction(false);
+					})
+				.catch(e =>  console.log("iNetLogin() failed:", e));
 			} else if ('error' === response.type) {
 				console.log(response);
 			}
@@ -145,6 +151,7 @@ export default function App() {
 * wg. verschaerfter CORS regeln im UCConnect darf ich keine header x-sessionid mehr schicken ...
 */
 	const webSocket = React.useRef();
+	const [ session, SetSession ] = React.useState({});
 	const sUCControllerUrl = "https://devuccontroller.ucconnect.de";
 	const sUCSID = "ws0021.local";
 	const mapRR = [];
@@ -192,6 +199,7 @@ export default function App() {
 				})
 			.then(response => response.json())
 			.then(oSession => {
+					SetSession(oSession);
 					let sWSOrigin1 = sOrigin + "/ws/client/websocket?x-ucsessionid=" + oSession.sessionid,
 						sWSOrigin2 = sWSOrigin1.replace("https://", "wss://"),
 						sWSOrigin3 = sWSOrigin2.replace("http://", "ws://");
@@ -236,7 +244,7 @@ export default function App() {
 		mapRR[oFrame.invoke.invokeID] = oCBs;
 		webSocket.current.send(window.JSON.stringify(oFrame));
 	}
-	const setAvailabe = () => {
+	const setNotAbsent = () => {
 		// authenticate
 		// login
 		// enterLoop
@@ -251,7 +259,7 @@ export default function App() {
 			const oAbsentStateSetUser = {
 					// _type: "AsnAbsentStateSetUserArgument", // generated from: sOperation by wssSend
 					absentstate: {
-						u8sContactId: "sip:psi@ws0021.local",
+						u8sContactId: session.ownContact.u8sContactId, // "sip:psi@ws0021.local"
 						u8sUsername: "",
 						stTimeFrom: "",
 						stTimeTo: "",
@@ -263,6 +271,22 @@ export default function App() {
 				};
 			wssSend("AbsentStateSetUser", oAbsentStateSetUser);
 		}
+	}
+	const setOutOfOffice = () => {
+		const oAbsentStateSetUser = {
+				// _type: "AsnAbsentStateSetUserArgument", // generated from: sOperation by wssSend
+				absentstate: {
+					u8sContactId: session.ownContact.u8sContactId, // "sip:psi@ws0021.local"
+					u8sUsername: "",
+					stTimeFrom: "",
+					stTimeTo: "",
+					iAbsentState: 1, // eABSENTSTATEOUTOFOFFICE(1), Out of office
+					u8sMessage: "", // Deprecated, should be empty.
+					u8sAbsentReason: "", // Deprecated, should be empty.
+					iPresenceState: 0 // ignored by the server
+				}
+			};
+		wssSend("AbsentStateSetUser", oAbsentStateSetUser);
 	}
 	const getIdTokenAsync = (ePrompt) => {
 /*
@@ -281,6 +305,7 @@ export default function App() {
 	}
 	const [ bNeedsUserInteraction, SetNeedsUserInteraction ] = React.useState(true);
 	const checkNoUserInteraction = () => {
+		console.assert(discoveryDoc, "invalid state/environment: discoveryDoc");
 		getIdTokenAsync(Prompt.None)
 			.then(authSessionResult => {
 					console.log("AuthSessionResult.type:", authSessionResult.type); // [AuthRequest.type](https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionresult)
@@ -436,9 +461,14 @@ redirectUri = "" // [Using auth.expo.io proxy?](https://github.com/expo/fyi/blob
 					onPress={e => { logoff() }}>
 				</Button>
 				<Button
-					disable={!discoveryDoc}
-					title="test"
-					onPress={(e) => { setAvailabe() }}>
+					disable={!session}
+					title="Available"
+					onPress={(e) => { setNotAbsent() }}>
+				</Button>
+				<Button
+					disable={!session}
+					title="Absent"
+					onPress={(e) => { setOutOfOffice() }}>
 				</Button>
 				<StatusBar></StatusBar>
 			</View>
