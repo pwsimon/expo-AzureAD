@@ -15,7 +15,13 @@ import {
 import {
 	Platform,
 	StyleSheet,
-	StatusBar,
+/*
+* diese App laueft produktiv nur als "Web". Die wird entsprechend gebaut und nach GitHub Pages deployed.
+* ergo auch wenn sie auf einem Mobile (Browser) laeuft sollte sie keine ahnung/zugriff auf die StatusBar haben ...
+* was sind eig. die alternativen zu Expo?
+* siehe auch: https://stackoverflow.com/questions/39170622/what-is-the-difference-between-expo-and-react-native
+*/
+	StatusBar, // [StatusBar](https://reactnative.dev/docs/statusbar)
 	View,
 	Text,
 	Button } from 'react-native';
